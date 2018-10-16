@@ -1,0 +1,14 @@
+/**********************************
+ * Copyright (C) 2018
+ *  Rafael Martín-Cuevas Redondo <r.martinc@outlook.com>
+ *  Rubén Sainz Gilarranz <ruben.sainz.gilarranz@alumnos.upm.es>
+ *  All Rights Reserved.
+ * 
+ * NOTICE:  All information contained herein is, and remains the property
+ * of Rafael Martín-Cuevas Redondo and Rubén Sainz Gilarranz, hereinafter
+ * referred to as The Authors. The intellectual and technical concepts
+ * contained herein are proprietary to The Authors and its suppliers.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from The Authors.
+ */
