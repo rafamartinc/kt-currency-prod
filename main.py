@@ -1,7 +1,27 @@
+#!/usr/bin/env python
+"""Loads currency data from APIs and sends it to Kafka..
+
+This script is meant to be a Kafka producer, responsible for retrieving
+data about a currency's value in real time, and loading it into the system.
+Will hold connection methods to several APIs, and will be responsible for
+one specific currency.
+"""
+
 from urllib import request
 import datetime
+import kafka
 import json
 import time
+import sys
+
+__author__ = "Rafael Martín-Cuevas, Rubén Sainz"
+__copyright__ = "Copyright 2007, The Cogent Project"
+__credits__ = ["Rafael Martín-Cuevas", "Rubén Sainz"]
+__license__ = "GPL"
+__version__ = "1.0.1"
+__maintainer__ = "Rafael Martín-Cuevas"
+__email__ = "r.martinc@outlook.com"
+__status__ = "Development"
 
 
 class CryptoApi:
@@ -35,9 +55,9 @@ class CryptoApi:
 
         # Build URL needed to request data from the server.
         url = self.__url + "histominute?" + \
-              "fsym=" + str(fsym) + "&tsym=" + str(tsym) + "&sign=" + str(sign) + \
-              "&tryConversion=" + str(try_conversion) + "&aggregate=" + str(aggregate) + \
-              "&limit=" + str(limit) + "&e=" + str(exchange)
+            "fsym=" + str(fsym) + "&tsym=" + str(tsym) + "&sign=" + str(sign) + \
+            "&tryConversion=" + str(try_conversion) + "&aggregate=" + str(aggregate) + \
+            "&limit=" + str(limit) + "&e=" + str(exchange)
 
         # Add the value 'ts', only if specified.
         if ts:
@@ -77,12 +97,12 @@ class CryptoApi:
         :return: Resulting data, as a dictionary.
         """
 
-        result = {} # Default return value.
+        result = {}  # Default return value.
 
         # Build URL needed to request data from the server.
         url = self.__url + "price?" + \
-              "fsym=" + str(fsym) + "&tsyms=" + ",".join(tsyms) + "&sign=" + str(sign) + \
-              "&tryConversion=" + str(try_conversion) + "&e=" + str(exchange)
+            "fsym=" + str(fsym) + "&tsyms=" + ",".join(tsyms) + "&sign=" + str(sign) + \
+            "&tryConversion=" + str(try_conversion) + "&e=" + str(exchange)
 
         # Connect and request data.
         with request.urlopen(url) as response:
@@ -99,17 +119,22 @@ class CryptoApi:
         return result
 
 
-api = CryptoApi()
-realConnection = True
-from_symbol = "EUR"
-to_symbol = ["ETH", "XRP", "LTC", "NEO", "XMR", "BCH", "BTC"]
-ds = {}
+def main():
+    api = CryptoApi()
+    realConnection = True
+    from_symbol = "EUR"
+    to_symbol = ["ETH", "XRP", "LTC", "NEO", "XMR", "BCH", "BTC"]
+    ds = {}
 
-while True:
-    results = api.price(from_symbol, to_symbol)
-    for k in results:
-        results[k] = 1 / results[k]
+    while True:
+        results = api.price(from_symbol, to_symbol)
+        for k in results:
+            results[k] = 1 / results[k]
 
-    print({datetime.datetime.utcnow().isoformat() + 'Z': results})
+        print({datetime.datetime.utcnow().isoformat() + 'Z': results})
 
-    time.sleep(10)
+        time.sleep(10)
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))
