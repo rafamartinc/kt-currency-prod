@@ -14,19 +14,24 @@ This file is subject to the terms and conditions defined in the file
 from urllib import request
 import json
 
-__author__ = "Rafael Martín-Cuevas, Rubén Sainz"
-__credits__ = ["Rafael Martín-Cuevas", "Rubén Sainz"]
-__version__ = "0.1.0"
-__status__ = "Development"
+__author__ = 'Rafael Martín-Cuevas, Rubén Sainz'
+__credits__ = ['Rafael Martín-Cuevas', 'Rubén Sainz']
+__version__ = '0.1.0'
+__status__ = 'Development'
 
 
 class CryptoCompareApi:
 
     def __init__(self):
-        self.__url = "https://min-api.cryptocompare.com/data/"
+        self.__url = 'https://min-api.cryptocompare.com/data/'
+        self.__query_limit = 1440
+
+    @property
+    def query_limit(self):
+        return self.__query_limit
 
     def histominute(self, fsym, tsym, sign=False, try_conversion=False,
-                    exchange="CCCAGG", aggregate=1, limit=1440, ts=None):
+                    exchange='CCCAGG', aggregate=1, limit=None, ts=None):
         """
         Get open, high, low, close, volumefrom and volumeto from the each minute historical
         data. This data is only stored for 7 days, if you need more, use the hourly or daily
@@ -49,15 +54,17 @@ class CryptoCompareApi:
 
         result = {}  # Default return value.
 
+        limit = self.__query_limit if limit is None else limit
+
         # Build URL needed to request data from the server.
-        url = self.__url + "histominute?" + \
-              "fsym=" + str(fsym) + "&tsym=" + str(tsym) + "&sign=" + str(sign) + \
-              "&tryConversion=" + str(try_conversion) + "&aggregate=" + str(aggregate) + \
-              "&limit=" + str(limit) + "&e=" + str(exchange)
+        url = self.__url + 'histominute?' + \
+              'fsym=' + str(fsym) + '&tsym=' + str(tsym) + '&sign=' + str(sign) + \
+              '&tryConversion=' + str(try_conversion) + '&aggregate=' + str(aggregate) + \
+              '&limit=' + str(limit) + '&e=' + str(exchange)
 
         # Add the value 'ts', only if specified.
         if ts:
-            url += "&toTs=" + str(ts)
+            url += '&toTs=' + str(ts)
 
         # Connect and request data.
         with request.urlopen(url) as response:
@@ -68,16 +75,30 @@ class CryptoCompareApi:
                 # Convert to Python dictionary.
                 result = json.loads(html)
 
-                if result.has_key("Response") and result.has_key("Message"):
-                    if result["Response"] == "Error":
-                        print("< Error > " + str(result["Message"]))
+            except ValueError as ex:
+                print('JSON response could not be parsed.')
+                print(ex)
 
-            except ValueError as e:
-                print("< ValueError > " + str(e))
+            else:
+                if 'Response' in result:
+
+                    if result['Response'] == 'Error':
+                        if 'Message' in result:
+                            raise Exception('CryptoCompare API returned Error: ' + str(result['Message']))
+                        else:
+                            raise Exception('CryptoCompare API returned Error without further explanation.')
+                    else:
+                        if 'Data' in result:
+                            result = result['Data']
+                        else:
+                            raise Exception('CryptoCompare API returned no Data field: ' + str(result))
+
+                else:
+                    raise Exception('CryptoCompare API returned no Response field: ' + str(result))
 
         return result
 
-    def price(self, fsym, tsyms, sign=False, try_conversion=False, exchange="CCCAGG"):
+    def price(self, fsym, tsyms, sign=False, try_conversion=False, exchange='CCCAGG'):
         """
         Get open, high, low, close, volumefrom and volumeto from the each minute historical
         data. This data is only stored for 7 days, if you need more, use the hourly or daily
@@ -96,9 +117,9 @@ class CryptoCompareApi:
         result = {}  # Default return value.
 
         # Build URL needed to request data from the server.
-        url = self.__url + "price?" + \
-              "fsym=" + str(fsym) + "&tsyms=" + ",".join(tsyms) + "&sign=" + str(sign) + \
-              "&tryConversion=" + str(try_conversion) + "&e=" + str(exchange)
+        url = self.__url + 'price?' + \
+              'fsym=' + str(fsym) + '&tsyms=' + ','.join(tsyms) + '&sign=' + str(sign) + \
+              '&tryConversion=' + str(try_conversion) + '&e=' + str(exchange)
 
         # Connect and request data.
         with request.urlopen(url) as response:
@@ -109,7 +130,18 @@ class CryptoCompareApi:
                 # Convert to Python dictionary.
                 result = json.loads(html)
 
-            except ValueError as e:
-                print("< ValueError > " + str(e))
+            except ValueError as ex:
+                print('JSON response could not be parsed.')
+                print(ex)
+
+            else:
+                if 'Response' in result:
+                    if result['Response'] == 'Error':
+                        if 'Message' in result:
+                            raise Exception('CryptoCompare API returned Error: ' + str(result['Message']))
+                        else:
+                            raise Exception('CryptoCompare API returned Error without further explanation.')
+                    else:
+                        raise Exception('CryptoCompare API returned an unexpected Response field: ' + str(result))
 
         return result
