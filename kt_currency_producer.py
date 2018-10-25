@@ -31,63 +31,63 @@ class KingstonProducer:
 
     def __init__(self, args):
 
-        self._api = CryptoCompareApi()
-        self._kafka_producer = self._connect_kafka_producer(args['kafka_host'], args['kafka_port'])
+        self.__api = CryptoCompareApi()
+        self.__kafka_producer = self.__connect_kafka_producer(args['kafka_host'], args['kafka_port'])
 
-        self._symbol = args['symbol']
-        self._reference = args['reference']
-        self._sleep = args['sleep']
+        self.__symbol = args['symbol']
+        self.__reference = args['reference']
+        self.__sleep = args['sleep']
 
         if args['rollback'] != 0:
             print('[INFO] Creating separate thread to load historical data...')
-            thread = threading.Thread(target=self._store_historical_prices(), args=())
+            thread = threading.Thread(target=self.__store_historical_prices(), args=())
             thread.start()
 
         while True:
-            self._store_current_price()
-            time.sleep(self._sleep)
+            self.__store_current_price()
+            time.sleep(self.__sleep)
 
-    def _store_current_price(self):
-        results = self._api.price(self._reference, [self._symbol])
+    def __store_current_price(self):
+        results = self.__api.price(self.__reference, [self.__symbol])
         for k in results:
             results[k] = 1 / results[k]
 
         document = {
             'timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
-            'currency': self._symbol,
-            'value': results[self._symbol],
-            'reference_currency': self._reference
+            'currency': self.__symbol,
+            'value': results[self.__symbol],
+            'reference_currency': self.__reference
         }
         print(document)
         self.__send_to_kafka(document)
 
-    def _store_historical_prices(self):
+    def __store_historical_prices(self):
 
         retrieve_from = int(datetime.datetime.utcnow().timestamp())
         continue_query = True
 
         while continue_query:
-            results = self._api.histominute(self._reference, self._symbol, ts=retrieve_from)
+            results = self.__api.histominute(self.__reference, self.__symbol, ts=retrieve_from)
             for result in results:
                 document = {
                     'timestamp': datetime.datetime.fromtimestamp(float(result['time'])).isoformat() + '.000000Z',
-                    'currency': self._symbol,
-                    'value': result['close'],
-                    'reference_currency': self._reference
+                    'currency': self.__symbol,
+                    'value': 1 / result['close'],
+                    'reference_currency': self.__reference
                 }
                 self.__send_to_kafka(document)
                 retrieve_from = min(retrieve_from, result['time'])
 
             print(str(len(results)) + ' historical prices loaded into Kafka.')
 
-            if len(results) < self._api.query_limit:
+            if len(results) < self.__api.query_limit:
                 continue_query = False
 
     def __send_to_kafka(self, document):
-        self._kafka_producer.send('kt_currencies', value=json.dumps(document).encode('utf-8'))
+        self.__kafka_producer.send('kt_currencies', value=json.dumps(document).encode('utf-8'))
 
     @staticmethod
-    def _connect_kafka_producer(kafka_host, kafka_port):
+    def __connect_kafka_producer(kafka_host, kafka_port):
         producer = None
         print('[INFO] Connecting to Kafka...')
         try:
