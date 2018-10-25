@@ -20,7 +20,7 @@ __version__ = "0.1.0"
 __status__ = "Development"
 
 
-class CryptoApi:
+class CryptoCompareApi:
 
     def __init__(self):
         self.__url = "https://min-api.cryptocompare.com/data/"

@@ -18,7 +18,7 @@ import time
 import sys
 from kafka import KafkaProducer
 
-from src.cryptoapi import CryptoApi
+from apis.cryptocompareapi import CryptoCompareApi
 
 __author__ = "Rafael Martín-Cuevas, Rubén Sainz"
 __credits__ = ["Rafael Martín-Cuevas", "Rubén Sainz"]
@@ -28,34 +28,40 @@ __status__ = "Development"
 
 class KingstonProducer:
 
-    def __init__(self, symbol, reference='EUR', sleep=5):
+    def __init__(self, args):
 
-        api = CryptoApi()
-        kafka_producer = connect_kafka_producer()
+        api = CryptoCompareApi()
+
+        kafka_producer = self._connect_kafka_producer(args['kafka_host'], args['kafka_port'])
 
         while True:
-            results = api.price(reference, symbol)
+            results = api.price(args['reference'], [args['symbol']])
             for k in results:
                 results[k] = 1 / results[k]
 
-            document = {datetime.datetime.utcnow().isoformat() + 'Z': results}
+            document = {
+                'timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
+                'currency': args['symbol'],
+                'value': results[args['symbol']],
+                'reference_currency': args['reference']
+            }
             print(document)
             kafka_producer.send('kt_currencies', value=json.dumps(document).encode('utf-8'))
 
-            time.sleep(sleep)
+            time.sleep(args['sleep'])
 
-
-def connect_kafka_producer():
-    producer = None
-    try:
-        producer = KafkaProducer(bootstrap_servers=['localhost:9092'],
-                                 value_serializer=lambda x: x,
-                                 api_version=(0, 10))
-    except Exception as ex:
-        print('[ERROR] Exception while connecting Kafka')
-        print(str(ex))
-    finally:
-        return producer
+    @staticmethod
+    def _connect_kafka_producer(kafka_host, kafka_port):
+        producer = None
+        print('[INFO] Connecting to Kafka...')
+        try:
+            producer = KafkaProducer(bootstrap_servers=[kafka_host + ':' + kafka_port])
+        except Exception as ex:
+            print('Exception while connecting Kafka.')
+            print(str(ex))
+        finally:
+            print('[INFO] Connection with Kafka established.')
+            return producer
 
 
 def parse_args(args):
@@ -93,7 +99,7 @@ def check_args(args):
     if 'kafka_host' not in args:
         args['kafka_host'] = 'localhost'
     if 'kafka_port' not in args:
-        args['kafka_port'] = '9200'
+        args['kafka_port'] = '9092'
     args['sleep'] = 5 if 'sleep' not in args else max(5, int(args['sleep']))
 
 
@@ -112,12 +118,12 @@ def main(args):
               '\n       --reference <from_symbol> (optional, default: EUR)' +
               '\n       --sleep <seconds> (optional, minimum/default: 5)' +
               '\n       --kafka_host <ip> (optional, default: localhost)' +
-              '\n       --kafka_port <port> (optional, default: 9200)'
+              '\n       --kafka_port <port> (optional, default: 9092)'
               '\n       --rollback <minutes> (optional, default/max: 7 days')
 
     else:
 
-        kp = KingstonProducer(args['symbol'], args['reference'], args['sleep'])
+        KingstonProducer(args)
 
 
 if __name__ == '__main__':
