@@ -121,21 +121,23 @@ class CryptoApi:
         return result
 
 
-def main():
-    api = CryptoApi()
-    realConnection = True
-    from_symbol = "EUR"
-    to_symbol = ["ETH", "XRP", "LTC", "NEO", "XMR", "BCH", "BTC"]
-    ds = {}
+def main(args):
 
-    while True:
-        results = api.price(from_symbol, to_symbol)
-        for k in results:
-            results[k] = 1 / results[k]
+    if len(args) not in [1, 2]:
+        print('[ERROR] Usage: python kt_currency_producer.py <from_symbol> [from_symbol]')
+    else:
+        api = CryptoApi()
+        from_symbol = args[1] if len(args) == 2 else 'EUR'
+        to_symbol = [args[0]]
 
-        print({datetime.datetime.utcnow().isoformat() + 'Z': results})
+        while True:
+            results = api.price(from_symbol, to_symbol)
+            for k in results:
+                results[k] = 1 / results[k]
 
-        time.sleep(10)
+            print({datetime.datetime.utcnow().isoformat() + 'Z': results})
+
+            time.sleep(10)
 
 
 if __name__ == '__main__':

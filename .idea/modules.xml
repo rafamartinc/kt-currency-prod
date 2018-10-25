@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/PPT_3.iml" filepath="$PROJECT_DIR$/.idea/PPT_3.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/kingston_producer.iml" filepath="$PROJECT_DIR$/.idea/kingston_producer.iml" />
     </modules>
   </component>
