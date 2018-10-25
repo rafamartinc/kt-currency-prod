@@ -59,7 +59,7 @@ class KingstonProducer:
             'reference_currency': self._reference
         }
         print(document)
-        self._kafka_producer.send('kt_currencies', value=json.dumps(document).encode('utf-8'))
+        self.__send_to_kafka(document)
 
     def _store_historical_prices(self):
 
@@ -75,12 +75,16 @@ class KingstonProducer:
                     'value': result['close'],
                     'reference_currency': self._reference
                 }
+                self.__send_to_kafka(document)
                 retrieve_from = min(retrieve_from, result['time'])
-    
+
+            print(str(len(results)) + ' historical prices loaded into Kafka.')
+
             if len(results) < self._api.query_limit:
                 continue_query = False
 
-            print(datetime.datetime.fromtimestamp(retrieve_from).isoformat() + '.000000Z')
+    def __send_to_kafka(self, document):
+        self._kafka_producer.send('kt_currencies', value=json.dumps(document).encode('utf-8'))
 
     @staticmethod
     def _connect_kafka_producer(kafka_host, kafka_port):
