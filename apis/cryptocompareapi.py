@@ -30,7 +30,7 @@ class CryptoCompareApi:
     def query_limit(self):
         return self.__query_limit
 
-    def histominute(self, fsym, tsym, sign=False, try_conversion=False,
+    def histominute(self, fsym, tsym, sign=False, try_conversion=True,
                     exchange='CCCAGG', aggregate=1, limit=None, ts=None):
         """
         Get open, high, low, close, volumefrom and volumeto from the each minute historical
@@ -58,8 +58,8 @@ class CryptoCompareApi:
 
         # Build URL needed to request data from the server.
         url = self.__url + 'histominute?' + \
-              'fsym=' + str(fsym) + '&tsym=' + str(tsym) + '&sign=' + str(sign) + \
-              '&tryConversion=' + str(try_conversion) + '&aggregate=' + str(aggregate) + \
+              'fsym=' + str(fsym) + '&tsym=' + str(tsym) + '&sign=' + str(sign).lower() + \
+              '&tryConversion=' + str(try_conversion).lower() + '&aggregate=' + str(aggregate) + \
               '&limit=' + str(limit) + '&e=' + str(exchange)
 
         # Add the value 'ts', only if specified.
@@ -98,7 +98,7 @@ class CryptoCompareApi:
 
         return result
 
-    def price(self, fsym, tsyms, sign=False, try_conversion=False, exchange='CCCAGG'):
+    def price(self, fsym, tsyms, sign=False, try_conversion=True, exchange='CCCAGG'):
         """
         Get open, high, low, close, volumefrom and volumeto from the each minute historical
         data. This data is only stored for 7 days, if you need more, use the hourly or daily
@@ -118,8 +118,8 @@ class CryptoCompareApi:
 
         # Build URL needed to request data from the server.
         url = self.__url + 'price?' + \
-              'fsym=' + str(fsym) + '&tsyms=' + ','.join(tsyms) + '&sign=' + str(sign) + \
-              '&tryConversion=' + str(try_conversion) + '&e=' + str(exchange)
+              'fsym=' + str(fsym) + '&tsyms=' + ','.join(tsyms) + '&sign=' + str(sign).lower() + \
+              '&tryConversion=' + str(try_conversion).lower() + '&e=' + str(exchange)
 
         # Connect and request data.
         with request.urlopen(url) as response:
