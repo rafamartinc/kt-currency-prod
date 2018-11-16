@@ -3,10 +3,9 @@
 """
 Loads currency data from APIs and sends it to Kafka.
 
-This script is meant to be a Kafka producer, responsible for retrieving
-data about a currency's value in real time, and loading it into the system.
-Will hold connection methods to several APIs, and will be responsible for
-one specific currency.
+This script is meant to retrieve data about a currency's value in real
+time, and loading it into the system. Will hold connection methods to
+several APIs, and will be responsible for one specific currency.
 
 This file is subject to the terms and conditions defined in the file
 'LICENSE.txt', which is part of this source code package.

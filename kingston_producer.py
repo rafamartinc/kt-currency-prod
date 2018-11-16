@@ -3,7 +3,7 @@
 """
 Loads currency data from APIs and sends it to Kafka.
 
-This script is meant to be a Kafka producer, responsible for retrieving
+This class is meant to be a Kafka producer, responsible for retrieving
 data about a currency's value in real time, and loading it into the system.
 Will hold connection methods to several APIs, and will be responsible for
 one specific currency.
@@ -44,13 +44,41 @@ class KingstonProducer:
 
         else:
             if args['rollback'] != 0:
-                print('[INFO] Creating separate thread to load historical data...')
-                thread = threading.Thread(target=self.__store_historical_prices(), args=())
-                thread.start()
+                print('[INFO] Initializing rollback...')
+                self.__historical_prices()
 
+            print('[INFO] Initializing retrieval of current prices...\n')
             while True:
                 self.__store_current_price()
                 time.sleep(self.__sleep)
+
+    def __historical_prices(self):
+
+        retrieve_from = int(datetime.datetime.utcnow().timestamp())
+        continue_query = True
+        results = []
+
+        while continue_query:
+            batch = self.__api.histominute(self.__reference, self.__symbol, ts=retrieve_from)
+            for i in reversed(range(len(batch))):
+                row = batch[i]
+                document = {
+                    'timestamp': datetime.datetime.fromtimestamp(float(row['time'])).isoformat() + '.000000Z',
+                    'currency': self.__symbol,
+                    'value': 1 / row['close'],
+                    'reference_currency': self.__reference
+                }
+                results.insert(0, document)
+                retrieve_from = min(retrieve_from, row['time'])
+
+            print('[INFO] ' + str(len(batch)) + ' historical prices loaded from the API.')
+
+            if len(batch) < self.__api.query_limit:
+                continue_query = False
+
+        for document in results:
+            self.__kafka_producer.send(document)
+        print('[INFO] Historical prices sent to Kafka.')
 
     def __store_current_price(self):
         results = self.__api.price(self.__reference, [self.__symbol])
@@ -65,25 +93,3 @@ class KingstonProducer:
         }
         print(document)
         self.__kafka_producer.send(document)
-
-    def __store_historical_prices(self):
-
-        retrieve_from = int(datetime.datetime.utcnow().timestamp())
-        continue_query = True
-
-        while continue_query:
-            results = self.__api.histominute(self.__reference, self.__symbol, ts=retrieve_from)
-            for result in results:
-                document = {
-                    'timestamp': datetime.datetime.fromtimestamp(float(result['time'])).isoformat() + '.000000Z',
-                    'currency': self.__symbol,
-                    'value': 1 / result['close'],
-                    'reference_currency': self.__reference
-                }
-                self.__kafka_producer.send(document)
-                retrieve_from = min(retrieve_from, result['time'])
-
-            print(str(len(results)) + ' historical prices loaded into Kafka.')
-
-            if len(results) < self.__api.query_limit:
-                continue_query = False

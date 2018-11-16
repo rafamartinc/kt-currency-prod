@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 
 """
-Loads currency data from APIs and sends it to Kafka.
+Loads currency data into Kafka.
 
-This script is meant to be a Kafka producer, responsible for retrieving
-data about a currency's value in real time, and loading it into the system.
-Will hold connection methods to several APIs, and will be responsible for
-one specific currency.
+This script is meant to be an interface to Kafka, responsible for loading
+messages into the system.
 
 This file is subject to the terms and conditions defined in the file
 'LICENSE.txt', which is part of this source code package.
