@@ -13,7 +13,7 @@ This file is subject to the terms and conditions defined in the file
 """
 
 import datetime
-import threading
+import timeit
 import time
 
 __author__ = "Rafael Martín-Cuevas, Rubén Sainz"
@@ -48,9 +48,7 @@ class KingstonProducer:
                 self.__historical_prices()
 
             print('[INFO] Initializing retrieval of current prices...\n')
-            while True:
-                self.__store_current_price()
-                time.sleep(self.__sleep)
+            self.__current_prices()
 
     def __historical_prices(self):
 
@@ -79,6 +77,20 @@ class KingstonProducer:
         for document in results:
             self.__kafka_producer.send(document)
         print('[INFO] Historical prices sent to Kafka.')
+
+    def __current_prices(self):
+
+        time_marker = timeit.default_timer()
+        previous_marker = time_marker - self.__sleep
+
+        while True:
+            self.__store_current_price()
+
+            diff = time_marker - (previous_marker + self.__sleep)
+            time.sleep(max(0, self.__sleep - diff))
+            
+            previous_marker = time_marker
+            time_marker = timeit.default_timer()
 
     def __store_current_price(self):
         results = self.__api.price(self.__reference, [self.__symbol])
