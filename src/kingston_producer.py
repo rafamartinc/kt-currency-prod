@@ -34,21 +34,14 @@ class KingstonProducer:
         self.__symbol = args['symbol']
         self.__reference = args['reference']
         self.__sleep = args['sleep']
+        self.__kafka_producer = CurrencyProducer(args['kafka_host'], args['kafka_port'], args['kafka_topic'])
 
-        try:
-            self.__kafka_producer = CurrencyProducer(args['kafka_host'], args['kafka_port'], args['kafka_topic'])
+        if args['rollback'] != 0:
+            print('[INFO] Initializing rollback...')
+            self.__historical_prices()
 
-        except Exception as ex:
-            print('Exception while connecting Kafka.')
-            print(str(ex))
-
-        else:
-            if args['rollback'] != 0:
-                print('[INFO] Initializing rollback...')
-                self.__historical_prices()
-
-            print('[INFO] Initializing retrieval of current prices...\n')
-            self.__current_prices()
+        print('[INFO] Initializing retrieval of current prices...\n')
+        self.__current_prices()
 
     def __historical_prices(self):
 
@@ -57,22 +50,27 @@ class KingstonProducer:
         results = []
 
         while continue_query:
-            batch = self.__api.histominute(self.__reference, self.__symbol, ts=retrieve_from)
-            for i in reversed(range(len(batch))):
-                row = batch[i]
-                document = {
-                    'timestamp': datetime.datetime.fromtimestamp(float(row['time'])).isoformat() + '.000000Z',
-                    'currency': self.__symbol,
-                    'value': 1 / row['close'],
-                    'reference_currency': self.__reference
-                }
-                results.insert(0, document)
-                retrieve_from = min(retrieve_from, row['time'])
-
-            print('[INFO] ' + str(len(batch)) + ' historical prices loaded from the API.')
-
-            if len(batch) < self.__api.query_limit:
+            try:
+                batch = self.__api.histominute(self.__reference, self.__symbol, ts=retrieve_from)
+            except Exception as ex:
+                print(str(ex))
                 continue_query = False
+            else:
+                for i in reversed(range(len(batch))):
+                    row = batch[i]
+                    document = {
+                        'timestamp': datetime.datetime.fromtimestamp(float(row['time'])).isoformat() + '.000000Z',
+                        'currency': self.__symbol,
+                        'value': 1 / row['close'],
+                        'reference_currency': self.__reference
+                    }
+                    results.insert(0, document)
+                    retrieve_from = min(retrieve_from, row['time'])
+
+                print('[INFO] ' + str(len(batch)) + ' historical prices loaded from the API.')
+
+                if len(batch) < self.__api.query_limit:
+                    continue_query = False
 
         for document in results:
             self.__kafka_producer.send(document)
