@@ -18,7 +18,7 @@ __credits__ = ["Rafael Martín-Cuevas", "Rubén Sainz"]
 __version__ = "0.1.0"
 __status__ = "Development"
 
-from kingston_producer import KingstonProducer
+from .kingston_producer import KingstonProducer
 
 
 def parse_args(args):

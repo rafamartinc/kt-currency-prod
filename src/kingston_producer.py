@@ -23,6 +23,7 @@ __status__ = "Development"
 
 from .apis.cryptocompare import CryptoCompareApi
 from .apis.kafka import CurrencyProducer
+from .model.value import MinuteValue
 
 
 class KingstonProducer:
@@ -58,14 +59,13 @@ class KingstonProducer:
             else:
                 for i in reversed(range(len(batch))):
                     row = batch[i]
-                    document = {
-                        'timestamp': datetime.datetime.fromtimestamp(float(row['time'])).isoformat() + '.000000Z',
-                        'currency': self.__symbol,
-                        'value': 1 / row['close'],
-                        'reference_currency': self.__reference,
-                        'api': 'CCCAGG'
-                    }
-                    results.insert(0, document)
+                    results.insert(0, MinuteValue(
+                        timestamp=datetime.datetime.fromtimestamp(float(row['time'])).isoformat() + '.000000Z',
+                        value=1 / row['close'],
+                        currency=self.__symbol,
+                        reference_currency=self.__reference,
+                        api='CCCAGG'
+                    ).to_json())
                     retrieve_from = min(retrieve_from, row['time'])
 
                 print('[INFO] ' + str(len(batch)) + ' historical prices loaded from the API.')
@@ -96,12 +96,12 @@ class KingstonProducer:
         for k in results:
             results[k] = 1 / results[k]
 
-        document = {
-            'timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
-            'currency': self.__symbol,
-            'value': results[self.__symbol],
-            'reference_currency': self.__reference,
-            'api': 'CCCAGG'
-        }
+        document = MinuteValue(
+            timestamp=datetime.datetime.utcnow().isoformat() + 'Z',
+            value=results[self.__symbol],
+            currency=self.__symbol,
+            reference_currency=self.__reference,
+            api='CCCAGG'
+        ).to_json()
         print(document)
         self.__kafka_producer.send(document)
