@@ -21,8 +21,8 @@ __credits__ = ["Rafael Martín-Cuevas", "Rubén Sainz"]
 __version__ = "0.1.0"
 __status__ = "Development"
 
-from apis.cryptocompareapi import CryptoCompareApi
-from apis.kafka_api import CurrencyProducer
+from .apis.cryptocompareapi import CryptoCompareApi
+from .apis.kafka_api import CurrencyProducer
 
 
 class KingstonProducer:
@@ -62,7 +62,8 @@ class KingstonProducer:
                         'timestamp': datetime.datetime.fromtimestamp(float(row['time'])).isoformat() + '.000000Z',
                         'currency': self.__symbol,
                         'value': 1 / row['close'],
-                        'reference_currency': self.__reference
+                        'reference_currency': self.__reference,
+                        'api': 'CCCAGG'
                     }
                     results.insert(0, document)
                     retrieve_from = min(retrieve_from, row['time'])
@@ -99,7 +100,8 @@ class KingstonProducer:
             'timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
             'currency': self.__symbol,
             'value': results[self.__symbol],
-            'reference_currency': self.__reference
+            'reference_currency': self.__reference,
+            'api': 'CCCAGG'
         }
         print(document)
         self.__kafka_producer.send(document)
