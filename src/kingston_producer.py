@@ -21,8 +21,8 @@ __credits__ = ["Rafael Martín-Cuevas", "Rubén Sainz"]
 __version__ = "0.1.0"
 __status__ = "Development"
 
-from .apis.cryptocompareapi import CryptoCompareApi
-from .apis.kafka_api import CurrencyProducer
+from .apis.cryptocompare import CryptoCompareApi
+from .apis.kafka import CurrencyProducer
 
 
 class KingstonProducer:
