@@ -35,7 +35,7 @@ class CurrencyProducer:
         while self.__producer is None:
             try:
                 print('[INFO] Trying to connect to Kafka...')
-                self.__producer = KafkaProducer(bootstrap_servers=[self.__kafka_host + ':' + self.__kafka_port])
+                self.__producer = KafkaProducer(bootstrap_servers=[self.__kafka_host + ':' + str(self.__kafka_port)])
             except Exception as ex:
                 print('Exception while connecting Kafka, retrying in 1 second')
                 print(str(ex))
