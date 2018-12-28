@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """
 Loads currency data from APIs.
@@ -23,12 +24,12 @@ __status__ = 'Development'
 class CryptoCompareApi:
 
     def __init__(self):
-        self.__url = 'https://min-api.cryptocompare.com/data/'
-        self.__query_limit = 1440
+        self._url = 'https://min-api.cryptocompare.com/data/'
+        self._query_limit = 1440
 
     @property
     def query_limit(self):
-        return self.__query_limit
+        return self._query_limit
 
     def histominute(self, fsym, tsym, sign=False, try_conversion=True,
                     exchange='CCCAGG', aggregate=1, limit=None, ts=None):
@@ -54,10 +55,10 @@ class CryptoCompareApi:
 
         result = {}  # Default return value.
 
-        limit = self.__query_limit if limit is None else limit
+        limit = self._query_limit if limit is None else limit
 
         # Build URL needed to request data from the server.
-        url = self.__url + 'histominute?' + \
+        url = self._url + 'histominute?' + \
               'fsym=' + str(fsym) + '&tsym=' + str(tsym) + '&sign=' + str(sign).lower() + \
               '&tryConversion=' + str(try_conversion).lower() + '&aggregate=' + str(aggregate) + \
               '&limit=' + str(limit) + '&e=' + str(exchange)
@@ -117,7 +118,7 @@ class CryptoCompareApi:
         result = {}  # Default return value.
 
         # Build URL needed to request data from the server.
-        url = self.__url + 'price?' + \
+        url = self._url + 'price?' + \
               'fsym=' + str(fsym) + '&tsyms=' + ','.join(tsyms) + '&sign=' + str(sign).lower() + \
               '&tryConversion=' + str(try_conversion).lower() + '&e=' + str(exchange)
 

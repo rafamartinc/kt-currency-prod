@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """
 Loads currency data into Kafka.
@@ -24,23 +25,23 @@ class CurrencyProducer:
 
     def __init__(self, kafka_host, kafka_port, kafka_topic):
 
-        self.__kafka_host = kafka_host
-        self.__kafka_port = kafka_port
-        self.__kafka_topic = kafka_topic
+        self._kafka_host = kafka_host
+        self._kafka_port = kafka_port
+        self._kafka_topic = kafka_topic
 
-        self.__producer = None
-        self.__connect()
+        self._producer = None
+        self._connect()
 
-    def __connect(self):
-        while self.__producer is None:
+    def _connect(self):
+        while self._producer is None:
             try:
                 print('[INFO] Trying to connect to Kafka...')
-                self.__producer = KafkaProducer(bootstrap_servers=[self.__kafka_host + ':' + str(self.__kafka_port)])
+                self._producer = KafkaProducer(bootstrap_servers=[self._kafka_host + ':' + str(self._kafka_port)])
             except Exception as ex:
                 print('Exception while connecting Kafka, retrying in 1 second')
                 print(str(ex))
 
-                self.__producer = None
+                self._producer = None
                 time.sleep(1)
             else:
                 print('[INFO] Connected to Kafka.')
@@ -51,8 +52,10 @@ class CurrencyProducer:
 
         while not sent:
             try:
-                sent = self.__producer.send(self.__kafka_topic, value=json.dumps(document).encode('utf-8'))
+                sent = self._producer.send(self._kafka_topic, value=json.dumps(document).encode('utf-8'))
             except Exception as ex:
                 print('Exception while sending to Kafka.')
                 print(str(ex))
-                self.__producer = None
+
+                self._producer = None
+                self._connect()

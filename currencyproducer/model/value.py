@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """
 File description.
@@ -6,8 +7,6 @@ File description.
 This file is subject to the terms and conditions defined in the file
 'LICENSE.txt', which is part of this source code package.
 """
-
-import json
 
 __author__ = "Rafael Martín-Cuevas, Rubén Sainz"
 __credits__ = ["Rafael Martín-Cuevas", "Rubén Sainz"]
@@ -27,10 +26,10 @@ class MinuteValue:
 
     def to_json(self):
 
-        return json.dumps({
+        return {
             'timestamp': self._timestamp,
             'value': self._value,
             'currency': self._currency,
             'reference_currency': self._reference_currency,
             'api': self._api
-        })
+        }

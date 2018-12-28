@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """
 Loads currency data from APIs and sends it to Kafka.
@@ -11,6 +12,7 @@ This file is subject to the terms and conditions defined in the file
 'LICENSE.txt', which is part of this source code package.
 """
 
+from __future__ import print_function
 import argparse
 import sys
 
@@ -60,4 +62,5 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+
+    main()
