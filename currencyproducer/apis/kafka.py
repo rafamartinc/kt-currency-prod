@@ -23,10 +23,9 @@ __status__ = "Development"
 
 class CurrencyProducer:
 
-    def __init__(self, kafka_host, kafka_port, kafka_topic):
+    def __init__(self, kafka_topic, kafka_servers='localhost:9092'):
 
-        self._kafka_host = kafka_host
-        self._kafka_port = kafka_port
+        self._kafka_servers = kafka_servers
         self._kafka_topic = kafka_topic
 
         self._producer = None
@@ -36,7 +35,7 @@ class CurrencyProducer:
         while self._producer is None:
             try:
                 print('[INFO] Trying to connect to Kafka...')
-                self._producer = KafkaProducer(bootstrap_servers=[self._kafka_host + ':' + str(self._kafka_port)])
+                self._producer = KafkaProducer(bootstrap_servers=self._kafka_servers.split(','))
             except Exception as ex:
                 print('Exception while connecting Kafka, retrying in 1 second')
                 print(str(ex))

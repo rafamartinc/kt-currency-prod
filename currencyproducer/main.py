@@ -42,14 +42,10 @@ def main():
                         default=7 * 24 * 60,
                         type=int,
                         help='Minutes to roll back data from APIs (default/max.: 7d)')
-    parser.add_argument('-k', '--kafka_host',
+    parser.add_argument('-k', '--kafka_servers',
                         default='localhost',
                         type=str,
-                        help='Kafka host (default: localhost)')
-    parser.add_argument('-p', '--kafka_port',
-                        default=9092,
-                        type=int,
-                        help='Kafka port (default: 9092)')
+                        help='Kafka servers, separated by colons (default: localhost:9092)')
     parser.add_argument('-t', '--kafka_topic',
                         default='kt_currencies',
                         type=str,
@@ -58,7 +54,7 @@ def main():
     args = parser.parse_args()
 
     KingstonProducer(args.symbol, reference=args.reference, sleep=args.sleep, rollback=args.rollback,
-                     kafka_host=args.kafka_host, kafka_port=args.kafka_port, kafka_topic=args.kafka_topic)
+                     kafka_servers=args.kafka_servers, kafka_topic=args.kafka_topic)
 
 
 if __name__ == '__main__':

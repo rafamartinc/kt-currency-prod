@@ -30,14 +30,14 @@ from .model.value import MinuteValue
 class KingstonProducer:
 
     def __init__(self, symbol, reference='EUR', sleep=5, rollback=7*24*60,
-                 kafka_host='localhost', kafka_port=9092, kafka_topic='kt_currencies'):
+                 kafka_servers='localhost:9092', kafka_topic='kt_currencies'):
 
         self._api = CryptoCompareApi()
 
         self._symbol = symbol
         self._reference = reference
         self._sleep = sleep
-        self._kafka_producer = CurrencyProducer(kafka_host, kafka_port, kafka_topic)
+        self._kafka_producer = CurrencyProducer(kafka_topic, kafka_servers)
 
         if rollback != 0:
             print('[INFO] Initializing rollback...')
