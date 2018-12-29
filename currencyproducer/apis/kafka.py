@@ -59,3 +59,5 @@ class CurrencyProducer:
 
                 self._producer = None
                 self._connect()
+
+        return sent

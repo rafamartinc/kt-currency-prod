@@ -107,4 +107,5 @@ class KingstonProducer:
             api='CCCAGG'
         ).to_json()
 
-        self._kafka_producer.send(document)
+        if self._kafka_producer.send(document):
+            print(document)
