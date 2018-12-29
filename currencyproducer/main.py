@@ -43,7 +43,7 @@ def main():
                         type=int,
                         help='Minutes to roll back data from APIs (default/max.: 7d)')
     parser.add_argument('-k', '--kafka_servers',
-                        default='localhost',
+                        default='localhost:9092',
                         type=str,
                         help='Kafka servers, separated by colons (default: localhost:9092)')
     parser.add_argument('-t', '--kafka_topic',
