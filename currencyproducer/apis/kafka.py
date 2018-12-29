@@ -44,6 +44,7 @@ class CurrencyProducer:
                 time.sleep(1)
             else:
                 print('[INFO] Connected to Kafka.')
+                print(self._producer)
 
     def send(self, document):
 
