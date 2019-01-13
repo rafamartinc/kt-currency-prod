@@ -75,6 +75,7 @@ class KingstonProducer:
                 if len(batch) < self._api.query_limit:
                     continue_query = False
 
+        print('>' + results[0])
         for document in results:
             self._kafka_producer.send(document)
         print('[INFO] Historical prices sent to Kafka.')
